@@ -1,13 +1,17 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
-import VideoPlayer from './VideoPlayer'
-import { useRef } from 'react'
+import VideoPlayer from './VideoPlayer' 
+import ButtonAppBar from './Header'
+import UploadButton from './UploadButton'
+import { useEffect, useRef } from 'react'
+import { Grid } from '@mui/material'
+// import Button from '@mui/material/Button';
+import { useEffect } from 'react'
 
 function App() {
+
   const playerRef = useRef(null)
-  const videoLink = "http://localhost:8000/uploads/courses/252d3983-32dc-4336-9f66-77b3225e6b33/index.m3u8"
+
+  const videoLink = "http://localhost:8000/uploads/courses/479c0c97-ebe0-4ed6-a83e-4359366115ea/index.m3u8"
 
   const videoPlayerOptions = {
     controls: true,
@@ -20,10 +24,13 @@ function App() {
       }
     ]
   }
+
   const handlePlayerReady = (player) => {
+
     playerRef.current = player;
 
     // You can handle player events here, for example:
+
     player.on("waiting", () => {
       videojs.log("player is waiting");
     });
@@ -32,17 +39,60 @@ function App() {
       videojs.log("player will dispose");
     });
   };
-  return (
-    <>
-      <div>
-        <h1>Video player</h1>
-      </div>
-      <VideoPlayer
-      options={videoPlayerOptions}
-      onReady={handlePlayerReady}
-      />
-    </>
-  )
-}
+  
+  const fetchAllVideos = () => {
+    axios.get('http://localhost:8000/api/all-videos')
+      .then((res) => {
+          console.log(res.data)
+      })
+      .catch((err) => {
+          console.log("Error in uploading: ", err)
+      })
+    };
+  }
 
-export default App
+  useEffect(() => {
+    // Fetch initial data or subscribe to events
+    console.log('Component mounted');
+    // Clean-up function can be returned here if needed
+    return () => {
+      console.log('Component unmounted');
+    };
+  }, [fetchAllVideos]);
+  
+  return (
+      <>
+    
+        <ButtonAppBar />
+        <UploadButton />
+
+        <button className="filter">All</button>
+
+ 
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={3}>
+              <VideoPlayer options={videoPlayerOptions} onReady={handlePlayerReady} />
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <VideoPlayer options={videoPlayerOptions} onReady={handlePlayerReady} />
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <VideoPlayer options={videoPlayerOptions} onReady={handlePlayerReady} />
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <VideoPlayer options={videoPlayerOptions} onReady={handlePlayerReady} />
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <VideoPlayer options={videoPlayerOptions} onReady={handlePlayerReady} />
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <VideoPlayer options={videoPlayerOptions} onReady={handlePlayerReady} />
+            </Grid>
+
+          </Grid>
+
+      </>
+    )
+  }
+
+  export default App

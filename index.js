@@ -5,11 +5,13 @@ import {v4 as uuidv4} from 'uuid'
 import path from "path"
 import fs from "fs"
 import {exec} from "child_process" //watch out
-import { stderr, stdout } from 'process'
+import { stderr, stdout, title } from 'process'
 import { error } from 'console'
+import db from './config/mongo-db.mjs'
+import Video from './model/video.mjs'
 
 const app = express()
-
+db()
 //multur middleware
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
@@ -48,20 +50,28 @@ app.get('/', (req, res)=> {
     res.json({message : "Hello"})
 })
 
+async function insertData(pathV, titleV) {
+    try {
+        const video = new Video({
+            title : titleV,
+            videoPath : pathV
+        })
+        const res = await video.save()
+        console.log(`Video is added ${res}`)
+    }catch (err) {
+        console.error('Error inserting data:', err);
+    } 
+}
+
 app.post("/upload", upload.single('file'), function(req, res) {
     const lessonId = uuidv4()
     const videoPath = req.file.path
     const outputPath = `./uploads/courses/${lessonId}`
     const hlsPath = `${outputPath}/index.m3u8`
-    console.log("Lessonid", lessonId)
-    console.log("Vidoe path", videoPath)
-    console.log("Output path", outputPath)
-    console.log("Hlspath", hlsPath)
-    
+    console.log(req.file)
     if (!fs.existsSync(outputPath)) {
         fs.mkdirSync(outputPath, {recursive: true})
     }
-    
     //ffmpeg
     const ffmpegCommand = `ffmpeg -i ${videoPath} -codec:v libx264 -codec:a aac -hls_time 10 -hls_playlist_type vod -hls_segment_filename "${outputPath}/segment%03d.ts" -start_number 0 -f hls ${hlsPath}`
 
@@ -73,7 +83,8 @@ app.post("/upload", upload.single('file'), function(req, res) {
         console.log(`stdout: ${stdout}`)
         console.log(`stderr: ${stderr}`)
         const videoUrl = `http://localhost:8000/uploads/courses/${lessonId}/index.m3u8`
-
+        const title = req.body.title
+        insertData(videoUrl, title)
         res.json({
             message: "Video coberted to HLS format",
             videoUrl: videoUrl,
@@ -81,6 +92,16 @@ app.post("/upload", upload.single('file'), function(req, res) {
         })
     })
 
+})
+app.get('api/all-videos', async function(req, res){
+    try {
+        const videos = await Video.find(); // Fetch all documents from the Video collection
+        const videosJson = videos.map(video => video.toJSON()); // Convert each document to JSON
+        console.log('All videos in JSON format:', JSON.stringify(videosJson, null, 2)); // Pretty-print JSON
+        return videosJson;
+    } catch (err) {
+        console.error('Error fetching data:', err);
+    }
 })
 
 app.listen(8000, ()=> {
