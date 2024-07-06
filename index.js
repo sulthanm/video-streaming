@@ -93,14 +93,14 @@ app.post("/upload", upload.single('file'), function(req, res) {
     })
 
 })
-app.get('api/all-videos', async function(req, res){
+app.get('/api/all-videos', async (req, res) => {
     try {
-        const videos = await Video.find(); // Fetch all documents from the Video collection
-        const videosJson = videos.map(video => video.toJSON()); // Convert each document to JSON
-        console.log('All videos in JSON format:', JSON.stringify(videosJson, null, 2)); // Pretty-print JSON
-        return videosJson;
+        const videos = await Video.find();
+        const videosJson = videos.map(video => video.toJSON());
+        return res.json(videosJson);
     } catch (err) {
         console.error('Error fetching data:', err);
+        return 
     }
 })
 
