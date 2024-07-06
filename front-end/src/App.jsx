@@ -1,98 +1,74 @@
-import './App.css'
-import VideoPlayer from './VideoPlayer' 
-import ButtonAppBar from './Header'
-import UploadButton from './UploadButton'
-import { useEffect, useRef } from 'react'
-import { Grid } from '@mui/material'
-// import Button from '@mui/material/Button';
-import { useEffect } from 'react'
+import './App.css';
+import VideoPlayer from './VideoPlayer';
+import ButtonAppBar from './Header';
+import UploadButton from './UploadButton';
+import { useEffect, useRef, useState } from 'react';
+import { Grid } from '@mui/material';
+import axios from 'axios'; // Don't forget to import axios
+import zIndex from '@mui/material/styles/zIndex';
 
 function App() {
-
-  const playerRef = useRef(null)
-
-  const videoLink = "http://localhost:8000/uploads/courses/479c0c97-ebe0-4ed6-a83e-4359366115ea/index.m3u8"
-
-  const videoPlayerOptions = {
-    controls: true,
-    responsive: true,
-    fluid: true,
-    sources: [
-      {
-        src: videoLink,
-        type: "application/x-mpegURL"
-      }
-    ]
-  }
+  const playerRef = useRef(null);
+  const [allVideoLinks, setAllVideoLinks] = useState([])
 
   const handlePlayerReady = (player) => {
-
     playerRef.current = player;
 
     // You can handle player events here, for example:
-
     player.on("waiting", () => {
-      videojs.log("player is waiting");
+      console.log("Player is waiting");
     });
 
     player.on("dispose", () => {
-      videojs.log("player will dispose");
+      console.log("Player will dispose");
     });
   };
-  
+
   const fetchAllVideos = () => {
     axios.get('http://localhost:8000/api/all-videos')
       .then((res) => {
-          console.log(res.data)
+        setAllVideoLinks(res.data)
+        console.log(res.data);
       })
       .catch((err) => {
-          console.log("Error in uploading: ", err)
-      })
-    };
-  }
+        console.log("Error in fetching videos: ", err);
+      });
+  };
 
   useEffect(() => {
-    // Fetch initial data or subscribe to events
+    fetchAllVideos();
     console.log('Component mounted');
-    // Clean-up function can be returned here if needed
     return () => {
       console.log('Component unmounted');
     };
-  }, [fetchAllVideos]);
-  
+  }, []);
+
   return (
-      <>
-    
-        <ButtonAppBar />
-        <UploadButton />
+    <>
+      <ButtonAppBar />
+      <UploadButton displayLatest = {fetchAllVideos} />
 
-        <button className="filter">All</button>
+      <button className="filter">All</button>
 
- 
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={3}>
-              <VideoPlayer options={videoPlayerOptions} onReady={handlePlayerReady} />
-            </Grid>
-            <Grid item xs={12} sm={3}>
-              <VideoPlayer options={videoPlayerOptions} onReady={handlePlayerReady} />
-            </Grid>
-            <Grid item xs={12} sm={3}>
-              <VideoPlayer options={videoPlayerOptions} onReady={handlePlayerReady} />
-            </Grid>
-            <Grid item xs={12} sm={3}>
-              <VideoPlayer options={videoPlayerOptions} onReady={handlePlayerReady} />
-            </Grid>
-            <Grid item xs={12} sm={3}>
-              <VideoPlayer options={videoPlayerOptions} onReady={handlePlayerReady} />
-            </Grid>
-            <Grid item xs={12} sm={3}>
-              <VideoPlayer options={videoPlayerOptions} onReady={handlePlayerReady} />
-            </Grid>
-
+      <Grid container spacing={3}>
+      {allVideoLinks.map((videoData) => (
+          <Grid key={videoData._id} item xs={12} sm={3}>
+            <VideoPlayer options={{
+              controls: true,
+              responsive: true,
+              fluid: true,
+              sources: [
+                {
+                  src: videoData.videoPath,
+                  type: "application/x-mpegURL"
+                }
+              ]
+            }} onReady={handlePlayerReady} />
           </Grid>
+      ))}
+      </Grid>
+    </>
+  );
+}
 
-      </>
-    )
-  }
-
-  export default App
+export default App;
