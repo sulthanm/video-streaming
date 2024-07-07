@@ -49,7 +49,9 @@ function App() {
       <ButtonAppBar />
       <UploadButton addURL={addVideoURL} />
 
-      <button className="filter">All</button>
+      <div>
+        <button className="filter">All</button>
+      </div>
 
       <Grid container spacing={3}>
       {allVideoLinks.map((videoData, index) => (
