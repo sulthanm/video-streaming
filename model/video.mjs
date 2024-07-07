@@ -9,8 +9,8 @@ const videoSchema = new mongoose.Schema({
         type : String,
         required : true
     }
-
 },{
+    timestamps: true,
     collection : 'all_videos'
 });
 
