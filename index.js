@@ -56,8 +56,8 @@ async function insertData(pathV, titleV) {
             title : titleV,
             videoPath : pathV
         })
-        const res = await video.save()
-        console.log(`Video is added ${res}`)
+        const result = await video.save()
+        return result
     }catch (err) {
         console.error('Error inserting data:', err);
     } 
@@ -77,25 +77,28 @@ app.post("/upload", upload.single('file'), function(req, res) {
 
     // no queue because of POC, not to be used as production
     exec(ffmpegCommand, (error, stdout, stderr), (error, stdout, stderr) => {
-        if (error) {
-            console.log(`exec error: ${error}`)
-        }
-        console.log(`stdout: ${stdout}`)
-        console.log(`stderr: ${stderr}`)
-        const videoUrl = `http://localhost:8000/uploads/courses/${lessonId}/index.m3u8`
-        const title = req.body.title
-        insertData(videoUrl, title)
-        res.json({
-            message: "Video coberted to HLS format",
-            videoUrl: videoUrl,
-            lessonId: lessonId
-        })
+        (async () => {
+            if (error) {
+                console.log(`exec error: ${error}`)
+            }
+            console.log(`stdout: ${stdout}`)
+            console.log(`stderr: ${stderr}`)
+            const videoUrl = `http://localhost:8000/uploads/courses/${lessonId}/index.m3u8`
+            const title = req.body.title
+            try {
+                const result = await insertData(videoUrl, title);
+                return res.json(result);
+            } catch (err) {
+                console.error('Error inserting data into database:', err);
+                return res.status(500).json({ error: 'Error inserting data into database' });
+            }
+        })()
     })
 
 })
 app.get('/api/all-videos', async (req, res) => {
     try {
-        const videos = await Video.find();
+        const videos = await Video.find().sort({ createdAt: -1 }).exec();;
         const videosJson = videos.map(video => video.toJSON());
         return res.json(videosJson);
     } catch (err) {
