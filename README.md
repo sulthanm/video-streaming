@@ -1,8 +1,8 @@
-Features:
+**_Features_**:
 - Upload videos
 - Watch videos
 
-Technologies used:
+**_Technologies used_**:
 - FFmpeg
 - Node.js
 - Express.js
