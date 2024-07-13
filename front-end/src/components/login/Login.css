@@ -1,0 +1,58 @@
+/* Sign-in wrapper */
+.sign-in-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+  }
+  
+  /* Sign-in backdrop */
+  .sign-in-backdrop {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Sign-in form inside the wrapper */
+  .sign-in-wrapper form {
+    width: 24rem;
+    max-width: 90%;
+    z-index: 1;
+    animation: showSignInForm 1s;
+  }
+  
+  /* Image inside the sign-in form */
+  .sign-in-wrapper form img {
+    width: 4rem;
+  }
+  
+  /* Additional image style if needed */
+  .sign-in-wrapper form img.large {
+    width: 10rem;
+  }
+  
+  /* Keyframes for animation */
+  @keyframes showSignInForm {
+    0% {
+      transform: translate(0, -150%);
+    }
+    30% {
+      transform: translate(0, -150%);
+    }
+    70% {
+      transform: translate(0, 1rem);
+    }
+    80% {
+      transform: translate(0, 1rem);
+    }
+    100% {
+      transform: translate(0, 0);
+    }
+  }
+  
