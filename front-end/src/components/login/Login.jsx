@@ -42,6 +42,7 @@ const Login = () => {
         notify('Invalid email or password', 'error');
       } else {
         // Handle successful login (e.g., redirect user, store token, etc.)
+        notify('Login successful', 'success')
         console.log('Login successful');
       }
     } catch (err) {

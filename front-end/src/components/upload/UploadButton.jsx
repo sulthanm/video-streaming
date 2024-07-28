@@ -38,29 +38,16 @@ const styles = {
 }
 
 const notify = (msg, type) => {
-    if (type == 'success') {
-        toast.success(msg, {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light"
-            });
-    }else{
-        toast.info(msg, {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light"
-            });
-    }
+    toast[type](msg, {
+        position: 'top-right',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'light',
+      });
 }
 
 export default function UploadButton({addURL}) {
@@ -92,9 +79,9 @@ export default function UploadButton({addURL}) {
                     };
                     addURL(newVideo);
                 }
-                
             })
             .catch((err) => {
+                notify('Error in uploading', 'error')
                 console.log("Error in uploading: ", err)
             })
         };
