@@ -28,9 +28,9 @@ const theme = createTheme({
   },
 });
 
-function Header() {
+function Header({ userName }) {
   const classes = useStyles();
-
+  console.log("In header", userName)
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ flexGrow: 1 }}>
@@ -39,9 +39,20 @@ function Header() {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1, padding: '10px' }}>
               <img src={Logo} alt="ViStream" className={classes.logo} />
             </Typography>
-            <Link to="/sign-in" style={{ textDecoration: 'none' }}>
-              <Button color="inherit" sx={{ color: '#fff' }}>Login</Button>
-            </Link>
+            {
+              userName ? (
+                <span>
+                  {userName}
+                </span>
+              ) : (
+
+                <Link to="/sign-in" style={{ textDecoration: 'none' }}>
+                  <Button color="inherit" sx={{ color: '#fff' }}>Login</Button>
+                </Link>
+
+              )
+            }
+
             <IconButton
               size="large"
               edge="start"

@@ -9,6 +9,9 @@ import { stderr, stdout, title } from 'process'
 import { error } from 'console'
 import db from './config/mongo-db.mjs'
 import Video from './model/video.mjs'
+import User from './model/user.mjs'
+import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
 
 const app = express()
 db()
@@ -106,6 +109,92 @@ app.get('/api/all-videos', async (req, res) => {
         return 
     }
 })
+
+app.post('/sign-in', (req, res) => {
+    const { email, password } = req.body;
+    console.log(req.body);
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Please provide all fields' });
+    }
+
+    User.findOne({ email })
+        .then(user => {
+            if (!user) {
+                return res.status(400).json({ error: 'Please Sign-Up' });
+            }
+            bcrypt.compare(password, user.password, (err, isMatch) => {
+                if (err) {
+                    console.log("Password wrong", err);
+                    return res.status(401).json({ error: 'Wrong username or password' }); 
+                }
+
+                if (isMatch) {
+                    const payload = {
+                        name: user.name,
+                        email: user.email
+                    };
+
+                    jwt.sign(payload, 'blahsomething', (err, token) => {
+                        if (err) throw err;
+
+                        res.cookie('token', token, { httpOnly: true, maxAge: 3600 * 1000 });
+                        res.status(200).json({ message: 'User logged in', name : user.name });
+
+                        console.log('User logged in');
+                    });
+                } else {
+                    res.status(401).json({ error: 'Invalid Credentials' });
+                }
+            });
+        })
+        .catch(err => console.error("Error message in finding user", err));
+});
+
+app.post('/sign-up', (req, res) => {
+    const { name, email, password } = req.body;
+
+    console.log('name:', name);
+
+    if (!name || !email || !password) {
+        return res.status(400).json({ error: 'Please provide all fields' });
+    }
+
+    User.findOne({ email })
+        .then(user => {
+            if (user) {
+                return res.status(400).json({ error: 'User already exists' });
+            }
+            const newUser = new User({ name, email, password });
+            bcrypt.genSalt(10, (err, salt) => {
+                if (err) throw err;
+                bcrypt.hash(newUser.password, salt, (err, hash) => {
+                    if (err) throw err;
+                    newUser.password = hash;
+                    newUser.save()
+                        .then(user => {
+                            jwt.sign(
+                                {id : user.id},
+                                'blahsomething',
+                                { expiresIn: 3600 },
+                                (err, token) => {
+                                    if (err) throw err;
+
+                                    res.cookie('token', token, { httpOnly: true });
+                                    res.json({
+                                        user: {
+                                            name: user.name,
+                                            email: user.email
+                                        }
+                                    });
+                                }
+                            );
+                        })
+                        .catch(err => console.error(err));
+                });
+            });
+        })
+        .catch(err => console.error(err));
+});
 
 app.listen(8000, ()=> {
     console.log("app is listening at 8000")
